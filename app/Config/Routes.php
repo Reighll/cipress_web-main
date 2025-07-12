@@ -17,8 +17,16 @@ $routes->post('/login/owner', 'OwnerLogin::attemptLogin');
 // Group for routes that require an owner to be logged in
 $routes->group('owner', ['filter' => 'owner_auth'], function ($routes) {
     $routes->get('dashboard', 'OwnerDashboard::index');
+
     $routes->get('inventory', 'Inventory::index');
+    $routes->get('inventory/delete/(:num)', 'Inventory::deleteItem/$1');
+    $routes->get('inventory/edit/(:num)', 'Inventory::edit/$1');
+    $routes->post('inventory/update/(:num)', 'Inventory::update/$1');
+
     $routes->get('add-item', 'AddItem::index');
+    $routes->get('add-item', 'AddItem::index');
+    $routes->post('add-item', 'AddItem::store');
+
     $routes->get('staff-management', 'StaffManagement::index');
     $routes->get('sales-report', 'SalesReport::index');
 
@@ -26,12 +34,8 @@ $routes->group('owner', ['filter' => 'owner_auth'], function ($routes) {
     $routes->get('staff/approve/(:num)', 'OwnerDashboard::approveStaff/$1');
     $routes->get('staff/decline/(:num)', 'OwnerDashboard::declineStaff/$1');
 
-    // --- THIS IS THE FIX ---
-    // API routes for dynamic content within the owner section
-    $routes->group('api', function($routes) {
-        // This was the route that was missing for the delete button
-        $routes->post('staff/delete', 'StaffManagement::deleteStaff');
-    });
+    // --- This is the new, simplified delete route ---
+    $routes->get('staff/delete/(:num)', 'StaffManagement::deleteStaff/$1');
 });
 
 
@@ -39,7 +43,6 @@ $routes->group('owner', ['filter' => 'owner_auth'], function ($routes) {
 $routes->get('/login/staff', 'StaffLogin::index');
 $routes->post('/login/staff', 'StaffLogin::attemptLogin');
 
-// Group for routes that require a staff member to be logged in
 $routes->group('staff', ['filter' => 'staff_auth'], function ($routes) {
     $routes->get('dashboard', 'StaffDashboard::index');
 });

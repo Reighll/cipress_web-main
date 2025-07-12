@@ -3,12 +3,12 @@
 namespace App\Controllers;
 
 use App\Models\StaffModel;
-use CodeIgniter\API\ResponseTrait;
 
 class StaffManagement extends BaseOwnerController
 {
-    use ResponseTrait;
-
+    /**
+     * Displays the main staff management page with a list of approved staff.
+     */
     public function index()
     {
         $staffModel = new StaffModel();
@@ -16,27 +16,26 @@ class StaffManagement extends BaseOwnerController
         return view('staff_management', $data);
     }
 
-    public function deleteStaff()
+    /**
+     * Deletes a staff member from the database and redirects back.
+     *
+     * @param int $staffId The ID of the staff to delete.
+     */
+    public function deleteStaff($staffId)
     {
-        if (!$this->request->isAJAX()) {
-            return $this->failForbidden('Direct access is not allowed.');
-        }
-
         $staffModel = new StaffModel();
-        $staffId = $this->request->getJSON()->id ?? null;
 
-        if ($staffId === null) {
-            return $this->failBadRequest('Staff ID is required.');
-        }
-
+        // Check if the staff member exists before trying to delete.
         if ($staffModel->find($staffId) === null) {
-            return $this->failNotFound('Staff member not found.');
+            return redirect()->to('/owner/staff-management')->with('error', 'Staff member not found.');
         }
 
+        // Attempt to delete the staff member.
         if ($staffModel->delete($staffId)) {
-            return $this->respondDeleted(['success' => true, 'message' => 'Staff member deleted successfully.']);
+            return redirect()->to('/owner/staff-management')->with('success', 'Staff member deleted successfully.');
         } else {
-            return $this->failServerError('Could not delete the staff member.');
+            // This might happen if there's a database error.
+            return redirect()->to('/owner/staff-management')->with('error', 'Could not delete the staff member.');
         }
     }
 }

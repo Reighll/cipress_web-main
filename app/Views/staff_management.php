@@ -10,6 +10,17 @@
             <h2 class="card-title">STAFF MANAGEMENT</h2>
             <h4 class="card-subtitle mb-4 text-muted">ALL APPROVED USERS</h4>
 
+            <?php if (session()->getFlashdata('success')): ?>
+                <div class="alert alert-success" role="alert">
+                    <?= session()->getFlashdata('success') ?>
+                </div>
+            <?php endif; ?>
+            <?php if (session()->getFlashdata('error')): ?>
+                <div class="alert alert-danger" role="alert">
+                    <?= session()->getFlashdata('error') ?>
+                </div>
+            <?php endif; ?>
+
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead class="thead-dark">
@@ -31,7 +42,11 @@
                                 <td><?= esc($staff['last_clock_out'] ?? 'N/A') ?></td>
                                 <td class="text-center">
                                     <a href="#" class="btn btn-sm btn-info">Edit</a>
-                                    <button class="btn btn-sm btn-danger delete-btn" data-id="<?= $staff['staff_id'] ?>">Delete</button>
+                                    <a href="<?= site_url('owner/staff/delete/' . $staff['staff_id']) ?>"
+                                       class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Are you sure you want to delete this staff member? This action cannot be undone.')">
+                                        Delete
+                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -49,49 +64,6 @@
 
 <?= $this->section('scripts') ?>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const staffTbody = document.getElementById('staff-tbody');
-
-            async function handleDelete(staffId) {
-                if (!confirm('Are you sure you want to delete this staff member? This will permanently remove them.')) {
-                    return;
-                }
-
-                try {
-                    const response = await fetch('/owner/api/staff/delete', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
-                        },
-                        body: JSON.stringify({ id: staffId })
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        const rowToRemove = document.getElementById(`staff-row-${staffId}`);
-                        if (rowToRemove) {
-                            rowToRemove.remove();
-                        }
-                        alert(result.message || 'Staff member deleted successfully.');
-                    } else {
-                        alert(result.message || 'Could not delete the staff member.');
-                    }
-
-                } catch (error) {
-                    console.error('Error deleting staff:', error);
-                    alert('An error occurred. Please try again.');
-                }
-            }
-
-            staffTbody.addEventListener('click', function(event) {
-                if (event.target && event.target.classList.contains('delete-btn')) {
-                    const staffId = event.target.dataset.id;
-                    handleDelete(staffId);
-                }
-            });
-        });
+        // You can add other scripts here if needed in the future.
     </script>
 <?= $this->endSection() ?>
