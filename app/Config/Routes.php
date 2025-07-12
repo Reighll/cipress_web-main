@@ -7,25 +7,37 @@ use CodeIgniter\Router\RouteCollection;
  */
 // General and Login Routes
 $routes->get('/', 'Login::index');
-$routes->get('/logout', 'OwnerLogin::logout'); // General logout can be handled by owner controller
+$routes->get('/logout', 'OwnerLogin::logout');
 
-// Owner Routes
+// --- OWNER ROUTES ---
 $routes->get('/login/owner', 'OwnerLogin::index');
 $routes->post('/login/owner', 'OwnerLogin::attemptLogin');
-$routes->get('/owner/dashboard', 'OwnerDashboard::index');
-$routes->get('/owner/inventory', 'Inventory::index');
-$routes->get('/owner/add-item', 'AddItem::index');
-$routes->get('/owner/staff-management', 'StaffManagement::index');
-$routes->get('/owner/sales-report', 'SalesReport::index');
 
-// Staff Routes
+// Group for routes that require an owner to be logged in
+$routes->group('owner', ['filter' => 'owner_auth'], function ($routes) {
+    $routes->get('dashboard', 'OwnerDashboard::index');
+    $routes->get('inventory', 'Inventory::index');
+    $routes->get('add-item', 'AddItem::index');
+    $routes->get('staff-management', 'StaffManagement::index');
+    $routes->get('sales-report', 'SalesReport::index');
+
+    // --- NEW: Routes for approving and declining staff ---
+    $routes->get('staff/approve/(:num)', 'OwnerDashboard::approveStaff/$1');
+    $routes->get('staff/decline/(:num)', 'OwnerDashboard::declineStaff/$1');
+});
+
+
+// --- STAFF ROUTES ---
 $routes->get('/login/staff', 'StaffLogin::index');
 $routes->post('/login/staff', 'StaffLogin::attemptLogin');
-$routes->get('/staff/dashboard', 'StaffDashboard::index');
+$routes->get('/staff/dashboard', 'StaffDashboard::index', ['filter' => 'staff_auth']);
 
-// Registration Routes
+
+// --- REGISTRATION ROUTES ---
 $routes->get('/register', 'Register::index');
 $routes->get('/register/owner', 'OwnerRegistration::index');
-$routes->post('/register/owner', 'OwnerRegistration::attemptRegister');
+// Note: The method in your controller is 'store', not 'attemptRegister'
+$routes->post('/register/owner', 'OwnerRegistration::store');
 $routes->get('/register/staff', 'StaffRegistration::index');
-$routes->post('/register/staff', 'StaffRegistration::attemptRegister');
+$routes->post('/register/staff', 'StaffRegistration::store');
+
