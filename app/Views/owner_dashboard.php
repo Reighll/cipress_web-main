@@ -28,31 +28,39 @@ Owner Dashboard
     <div class="col-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body">
-                <h4 class="card-title">FOR APPROVAL (STAFFS)</h4>
+                <h4 class="card-title">STAFF REGISTRATIONS</h4>
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                         <tr>
                             <th>NO.</th>
                             <th>USER</th>
-                            <th class="text-center">ACTIONS</th>
+                            <th class="text-center">STATUS / ACTIONS</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <?php if (!empty($pending_staff)): ?>
-                            <?php foreach ($pending_staff as $index => $staff): ?>
+                        <?php if (!empty($staff_for_review)): ?>
+                            <?php foreach ($staff_for_review as $index => $staff): ?>
                                 <tr>
                                     <td><?= $index + 1 ?></td>
                                     <td><?= esc($staff['staff_firstname'] . ' ' . $staff['staff_lastname']) ?> (<?= esc($staff['staff_username']) ?>)</td>
                                     <td class="text-center">
-                                        <a href="<?= site_url('owner/staff/approve/' . $staff['staff_id']) ?>" class="btn btn-success btn-sm" onclick="return confirm('Are you sure you want to approve this staff member?')">Approve</a>
-                                        <a href="<?= site_url('owner/staff/decline/' . $staff['staff_id']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to decline this staff member?')">Decline</a>
+                                        <?php if ($staff['staff_status'] === 'pending'): ?>
+                                            <!-- Actions for pending staff -->
+                                            <a href="<?= site_url('owner/staff/approve/' . $staff['staff_id']) ?>" class="btn btn-success btn-sm" onclick="return confirm('Are you sure you want to approve this staff member?')">Approve</a>
+                                            <a href="<?= site_url('owner/staff/decline/' . $staff['staff_id']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to decline this staff member?')">Decline</a>
+
+                                        <?php elseif ($staff['staff_status'] === 'declined'): ?>
+                                            <!-- Status and action for declined staff -->
+                                            <span class="badge badge-danger mr-2">Declined</span>
+                                            <a href="<?= site_url('owner/staff/approve/' . $staff['staff_id']) ?>" class="btn btn-success btn-sm" onclick="return confirm('This staff member was previously declined. Are you sure you want to approve them now?')">Approve</a>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="3" class="text-center">No pending staff approvals.</td>
+                                <td colspan="3" class="text-center">No staff registrations to review.</td>
                             </tr>
                         <?php endif; ?>
                         </tbody>
@@ -94,7 +102,6 @@ Owner Dashboard
                 return;
             }
 
-            // A more compatible way to copy to clipboard
             const textArea = document.createElement("textarea");
             textArea.value = keyInput.value;
             document.body.appendChild(textArea);

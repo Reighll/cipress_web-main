@@ -3,7 +3,8 @@
 namespace Config;
 
 use CodeIgniter\Config\Filters as BaseFilters;
-use App\Filters\OwnerAuthFilter; // Add the use statement for your filter
+use App\Filters\OwnerAuthFilter;
+use App\Filters\StaffAuthFilter; // <-- Add this line
 use CodeIgniter\Filters\Cors;
 use CodeIgniter\Filters\CSRF;
 use CodeIgniter\Filters\DebugToolbar;
@@ -32,8 +33,9 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
-        // --- This is the line you need to add ---
         'owner_auth'    => OwnerAuthFilter::class,
+        // --- ADD THIS LINE ---
+        'staff_auth'    => StaffAuthFilter::class,
     ];
 
     /**
