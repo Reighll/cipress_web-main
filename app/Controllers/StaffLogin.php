@@ -61,9 +61,18 @@ class StaffLogin extends BaseController
         ]);
     }
 
+    /**
+     * --- THIS IS THE UPDATED FUNCTION ---
+     * Logs the staff member out by removing their specific session data
+     * and redirects them to the staff login page.
+     */
     public function logout()
     {
-        session()->destroy();
-        return redirect()->to('/login/staff');
+        // Remove only staff-specific session variables.
+        // This is safer than session()->destroy().
+        session()->remove(['staff_id', 'staff_username', 'is_staff_logged_in']);
+
+        // Redirect to the staff login page with a success message.
+        return redirect()->to('/login/staff')->with('success', 'You have been logged out successfully.');
     }
 }
