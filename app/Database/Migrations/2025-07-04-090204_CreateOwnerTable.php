@@ -39,11 +39,13 @@ class CreateOwnerTable extends Migration
             ],
         ]);
         $this->forge->addKey('owner_id', true);
-        $this->forge->createTable('owner');
+        // The 'true' parameter checks if the table exists before creating it.
+        $this->forge->createTable('owner', true);
     }
 
     public function down()
     {
-        $this->forge->dropTable('owner');
+        // The 'true' parameter checks if the table exists before dropping it.
+        $this->forge->dropTable('owner', true);
     }
 }
