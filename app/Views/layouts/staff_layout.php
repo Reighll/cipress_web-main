@@ -12,7 +12,6 @@
 </head>
 <body>
 <div class="container-scroller">
-    <!-- [THE FIX] Added the sidebar navigation for staff -->
     <nav class="sidebar sidebar-offcanvas" id="sidebar">
         <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
             <a class="sidebar-brand brand-logo" href="/staff/dashboard" style="text-decoration: none;">
@@ -52,9 +51,8 @@
             </li>
 
             <?php
-            // Helper to check the current URL segment for highlighting the active link
             $uri = service('uri');
-            $current_segment = $uri->getSegment(2); // Get the part after /staff/
+            $current_segment = $uri->getSegment(2);
             ?>
 
             <li class="nav-item menu-items <?= ($current_segment === 'dashboard') ? 'active' : '' ?>">
@@ -63,29 +61,31 @@
                     <span class="menu-title">Dashboard</span>
                 </a>
             </li>
+
+            <li class="nav-item menu-items <?= ($current_segment === 'attendance') ? 'active' : '' ?>">
+                <a class="nav-link" href="/staff/attendance">
+                    <span class="menu-icon"><i class="mdi mdi-clock-fast"></i></span>
+                    <span class="menu-title">Clock In / Out</span>
+                </a>
+            </li>
+
+            <!-- [THE FIX] Added the Receipt link back -->
             <li class="nav-item menu-items <?= ($current_segment === 'receipt') ? 'active' : '' ?>">
                 <a class="nav-link" href="#">
                     <span class="menu-icon"><i class="mdi mdi-receipt"></i></span>
                     <span class="menu-title">Receipt</span>
                 </a>
             </li>
-            <li class="nav-item menu-items <?= ($current_segment === 'settings') ? 'active' : '' ?>">
-                <a class="nav-link" href="/staff/settings">
-                    <span class="menu-icon"><i class="mdi mdi-settings"></i></span>
-                    <span class="menu-title">Settings</span>
-                </a>
-            </li>
+
         </ul>
     </nav>
 
-    <!-- [THE FIX] The main content area now sits inside the page-body-wrapper -->
     <div class="container-fluid page-body-wrapper">
         <nav class="navbar p-0 fixed-top d-flex flex-row">
             <div class="navbar-brand-wrapper d-flex d-lg-none align-items-center justify-content-center">
                 <a class="navbar-brand brand-logo-mini" href="#"><img src="<?= base_url('assets/images/logo-mini.svg') ?>" alt="logo" /></a>
             </div>
             <div class="navbar-menu-wrapper flex-grow d-flex align-items-stretch">
-                <!-- This button is for minimizing the new sidebar -->
                 <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
                     <span class="mdi mdi-menu"></span>
                 </button>

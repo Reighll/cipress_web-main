@@ -48,8 +48,13 @@ $routes->group('staff', ['filter' => 'staff_auth'], function ($routes) {
     $routes->get('receipt/(:num)', 'StaffDashboard::receipt/$1');
     $routes->get('logout', 'StaffLogin::logout');
 
-    // [NEW] Staff Settings Routes
+    // Staff Settings Routes
     $routes->get('settings', 'StaffSettings::index');
     $routes->post('settings/update-password', 'StaffSettings::updatePassword');
     $routes->post('settings/update-username', 'StaffSettings::updateUsername');
+
+    // Attendance Routes
+    $routes->get('attendance', 'Attendance::index');
+    $routes->post('attendance/clock-in', 'Attendance::clockIn');
+    $routes->post('attendance/clock-out', 'Attendance::clockOut');
 });
