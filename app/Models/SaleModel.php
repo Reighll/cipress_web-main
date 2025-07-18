@@ -11,37 +11,71 @@ class SaleModel extends Model
     protected $allowedFields = ['customer_id', 'staff_id', 'total_price', 'payment_received', 'change_due', 'sale_date'];
 
     /**
-     * [FIXED]
-     * Fetches sales records for a report, using 'staff_username' as the staff's name.
+     * [NEW] Calculates the sum of 'total_price' for a given date range.
      */
-    public function getSalesReport($start_date, $end_date)
+    public function getTotalSalesForPeriod($start_date, $end_date)
     {
-        return $this->select("sales.*, customers.customer_name, staff.staff_username as staff_name")
-            ->join('customers', 'customers.customer_id = sales.customer_id', 'left')
-            ->join('staff', 'staff.staff_id = sales.staff_id', 'left')
+        if (empty($start_date) || empty($end_date)) {
+            return 0;
+        }
+
+        $result = $this->selectSum('total_price', 'total')
             ->where('sale_date >=', $start_date)
             ->where('sale_date <=', $end_date)
-            ->findAll();
+            ->get()
+            ->getRow();
+
+        return $result->total ?? 0;
     }
 
     /**
-     * [FIXED]
-     * Fetches all details for a single sale, using 'staff_username' as the staff's name.
+     * [NEW] Fetches all sales within a date range and includes all associated items for each sale.
+     */
+    public function getDetailedSalesReport($start_date, $end_date)
+    {
+        // First, get all sales within the date range, joining staff name
+        $sales = $this->select("sales.*, staff.staff_username as staff_name")
+            ->join('staff', 'staff.staff_id = sales.staff_id', 'left')
+            ->where('sale_date >=', $start_date)
+            ->where('sale_date <=', $end_date)
+            ->orderBy('sale_date', 'DESC')
+            ->findAll();
+
+        if (empty($sales)) {
+            return [];
+        }
+
+        $saleItemModel = model(SaleItemModel::class);
+
+        // For each sale, attach its list of items sold
+        foreach ($sales as &$sale) {
+            $sale['items'] = $saleItemModel
+                ->select('sale_items.*, items.item_name, items.item_initial_price')
+                ->join('items', 'items.item_id = sale_items.item_id', 'left')
+                ->where('sale_id', $sale['sale_id'])
+                ->findAll();
+        }
+
+        return $sales;
+    }
+
+    /**
+     * [UNCHANGED]
+     * Fetches all details for a single sale, including customer info and all items.
+     * This is the original method for the working receipt page.
      */
     public function getSaleDetails($sale_id)
     {
-        // Get the main sale record, joining customer info and using the staff's username as their name
         $sale = $this->select("sales.*, customers.customer_name, customers.customer_number, customers.customer_address, staff.staff_username as staff_name")
             ->join('customers', 'customers.customer_id = sales.customer_id', 'left')
             ->join('staff', 'staff.staff_id = sales.staff_id', 'left')
             ->find($sale_id);
 
-        // If a sale was found, fetch all of its associated items
         if ($sale) {
             $sale['items'] = model(SaleItemModel::class)
-                ->select('sale_items.*, items.item_name')
+                ->select('sale_items.*, items.item_name, items.item_initial_price')
                 ->join('items', 'items.item_id = sale_items.item_id')
-                ->where('sale_id', $sale_id)
+                ->where('sale_id', $sale['sale_id'])
                 ->findAll();
         }
 
