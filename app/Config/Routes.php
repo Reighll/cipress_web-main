@@ -7,14 +7,11 @@ use CodeIgniter\Router\RouteCollection;
  */
 
 // --- GENERAL & PUBLIC ROUTES ---
-
-// Main login chooser page
+// These routes are for logging in, logging out, and registration.
 $routes->get('/', 'Login::index');
+$routes->get('/logout', 'OwnerLogin::logout'); // General logout can be handled here or in specific groups
 
-// Logout route
-$routes->get('/logout', 'OwnerLogin::logout');
-
-// Standalone Login Routes
+// Login Routes
 $routes->get('/login/owner', 'OwnerLogin::index');
 $routes->post('/login/owner', 'OwnerLogin::attemptLogin');
 $routes->get('/login/staff', 'StaffLogin::index');
@@ -47,7 +44,6 @@ $routes->group('owner', ['filter' => 'owner_auth'], function ($routes) {
     $routes->get('sales-report', 'SalesReport::index');
     $routes->get('receipt/(:num)', 'SalesReport::viewReceipt/$1');
 
-
     // Staff approval from dashboard
     $routes->get('staff/approve/(:num)', 'OwnerDashboard::approveStaff/$1');
     $routes->get('staff/decline/(:num)', 'OwnerDashboard::declineStaff/$1');
@@ -55,17 +51,13 @@ $routes->group('owner', ['filter' => 'owner_auth'], function ($routes) {
 
 
 // --- STAFF ROUTES (PROTECTED) ---
-// This group contains the fix for the form submission.
+// This group requires the user to be logged in as a staff member.
 $routes->group('staff', ['filter' => 'staff_auth'], function ($routes) {
-    // The main dashboard page for staff.
+    // Dashboard & Sales
     $routes->get('dashboard', 'StaffDashboard::index');
-
-    // [THIS IS THE FIX] This route handles the form POST from the staff dashboard.
     $routes->post('dashboard/process_sale', 'StaffDashboard::process_sale');
-
-    // This ensures the receipt page is handled by the staff controller.
     $routes->get('receipt/(:num)', 'StaffDashboard::receipt/$1');
 
-    // The staff logout route.
+    // Staff-specific logout
     $routes->get('logout', 'StaffLogin::logout');
 });
