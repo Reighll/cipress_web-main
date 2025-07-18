@@ -12,27 +12,87 @@
 </head>
 <body>
 <div class="container-scroller">
-    <div class="container-fluid page-body-wrapper" style="padding-left: 0; width: 100%;">
+    <!-- [THE FIX] Added the sidebar navigation for staff -->
+    <nav class="sidebar sidebar-offcanvas" id="sidebar">
+        <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
+            <a class="sidebar-brand brand-logo" href="/staff/dashboard" style="text-decoration: none;">
+                <div class="text-center">
+                    <h4 class="text-white font-weight-bold">N.J CIPRESS</h4>
+                </div>
+            </a>
+            <a class="sidebar-brand brand-logo-mini" href="/staff/dashboard">
+                <div class="text-center">
+                    <h4 class="text-white font-weight-bold">NJC</h4>
+                </div>
+            </a>
+        </div>
+        <ul class="nav">
+            <li class="nav-item profile">
+                <div class="profile-desc">
+                    <div class="profile-pic">
+                        <div class="count-indicator">
+                            <?php
+                            $username = session()->get('staff_username') ?? 'Staff';
+                            $initial = strtoupper(substr($username, 0, 1));
+                            ?>
+                            <div class="img-xs rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="color: #000; font-size: 1.2rem;">
+                                <?= esc($initial) ?>
+                            </div>
+                            <span class="count bg-success"></span>
+                        </div>
+                        <div class="profile-name">
+                            <h5 class="mb-0 font-weight-normal"><?= esc($username) ?></h5>
+                            <span>Staff Member</span>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item nav-category">
+                <span class="nav-link">Navigation</span>
+            </li>
 
-        <nav class="navbar p-0 fixed-top d-flex flex-row" style="left: 0;">
+            <?php
+            // Helper to check the current URL segment for highlighting the active link
+            $uri = service('uri');
+            $current_segment = $uri->getSegment(2); // Get the part after /staff/
+            ?>
+
+            <li class="nav-item menu-items <?= ($current_segment === 'dashboard') ? 'active' : '' ?>">
+                <a class="nav-link" href="/staff/dashboard">
+                    <span class="menu-icon"><i class="mdi mdi-view-dashboard"></i></span>
+                    <span class="menu-title">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item menu-items <?= ($current_segment === 'receipt') ? 'active' : '' ?>">
+                <a class="nav-link" href="#">
+                    <span class="menu-icon"><i class="mdi mdi-receipt"></i></span>
+                    <span class="menu-title">Receipt</span>
+                </a>
+            </li>
+            <li class="nav-item menu-items <?= ($current_segment === 'settings') ? 'active' : '' ?>">
+                <a class="nav-link" href="/staff/settings">
+                    <span class="menu-icon"><i class="mdi mdi-settings"></i></span>
+                    <span class="menu-title">Settings</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- [THE FIX] The main content area now sits inside the page-body-wrapper -->
+    <div class="container-fluid page-body-wrapper">
+        <nav class="navbar p-0 fixed-top d-flex flex-row">
             <div class="navbar-brand-wrapper d-flex d-lg-none align-items-center justify-content-center">
                 <a class="navbar-brand brand-logo-mini" href="#"><img src="<?= base_url('assets/images/logo-mini.svg') ?>" alt="logo" /></a>
             </div>
             <div class="navbar-menu-wrapper flex-grow d-flex align-items-stretch">
-                <a class="navbar-brand" href="/staff/dashboard" style="text-decoration: none;">
-                    <div class="text-left">
-                        <h4 class="text-white font-weight-bold">N.J CIPRESS</h4>
-                        <p class="text-muted" style="font-size: 0.7rem;">GENERAL MERCHANDISE</p>
-                    </div>
-                </a>
+                <!-- This button is for minimizing the new sidebar -->
+                <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+                    <span class="mdi mdi-menu"></span>
+                </button>
                 <ul class="navbar-nav navbar-nav-right ml-auto">
                     <li class="nav-item dropdown">
                         <a class="nav-link" id="profileDropdown" href="#" data-toggle="dropdown">
                             <div class="navbar-profile">
-                                <?php
-                                $username = session()->get('staff_username') ?? 'Staff';
-                                $initial = strtoupper(substr($username, 0, 1));
-                                ?>
                                 <div class="img-xs rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="color: #000; font-size: 1.2rem;">
                                     <?= esc($initial) ?>
                                 </div>
@@ -43,7 +103,6 @@
                         <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="profileDropdown">
                             <h6 class="p-3 mb-0">Profile</h6>
                             <div class="dropdown-divider"></div>
-
                             <a href="<?= site_url('staff/settings') ?>" class="dropdown-item preview-item">
                                 <div class="preview-thumbnail">
                                     <div class="preview-icon bg-dark rounded-circle">
@@ -55,7 +114,6 @@
                                 </div>
                             </a>
                             <div class="dropdown-divider"></div>
-
                             <a href="<?= site_url('staff/logout') ?>" class="dropdown-item preview-item">
                                 <div class="preview-thumbnail">
                                     <div class="preview-icon bg-dark rounded-circle">
@@ -74,7 +132,7 @@
                 </button>
             </div>
         </nav>
-        <div class="main-panel" style="width: 100%;">
+        <div class="main-panel">
             <div class="content-wrapper">
                 <?= $this->renderSection('content') ?>
             </div>
