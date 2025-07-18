@@ -55,19 +55,17 @@ $routes->group('owner', ['filter' => 'owner_auth'], function ($routes) {
 
 
 // --- STAFF ROUTES (PROTECTED) ---
-// This group requires the user to be logged in as a staff member.
+// This group contains the fix for the form submission.
 $routes->group('staff', ['filter' => 'staff_auth'], function ($routes) {
+    // The main dashboard page for staff.
     $routes->get('dashboard', 'StaffDashboard::index');
 
-    // --- FIX ---
-    // The receipt route now correctly points to the 'receipt' method
-    // in the 'StaffDashboard' controller, which is accessible to staff.
+    // [THIS IS THE FIX] This route handles the form POST from the staff dashboard.
+    $routes->post('dashboard/process_sale', 'StaffDashboard::process_sale');
+
+    // This ensures the receipt page is handled by the staff controller.
     $routes->get('receipt/(:num)', 'StaffDashboard::receipt/$1');
 
+    // The staff logout route.
     $routes->get('logout', 'StaffLogin::logout');
-
-    // API routes for the staff dashboard (e.g., checkout)
-    $routes->group('api', function($routes) {
-        $routes->post('checkout', 'StaffDashboard::processCheckout');
-    });
 });

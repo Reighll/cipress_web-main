@@ -6,12 +6,9 @@ use App\Models\ItemModel;
 use App\Models\SaleModel;
 use App\Models\SaleItemModel;
 use App\Models\CustomerModel;
-use CodeIgniter\API\ResponseTrait;
 
 class StaffDashboard extends BaseStaffController
 {
-    use ResponseTrait;
-
     /**
      * Displays the main staff dashboard (the cart view).
      */
@@ -24,27 +21,26 @@ class StaffDashboard extends BaseStaffController
     }
 
     /**
-     * API endpoint to process the checkout.
+     * Handles the checkout form submission using a standard redirect method.
      */
-    public function processCheckout()
+    public function process_sale()
     {
-        if (!$this->request->isAJAX()) {
-            return $this->failForbidden('Direct access is not allowed.');
+        // Get form data from the POST request.
+        $cart_items = $this->request->getPost('cart_items');
+        $customer_name = $this->request->getPost('customer_name');
+        $customer_number = $this->request->getPost('customer_number');
+        $customer_address = $this->request->getPost('customer_address');
+        $payment_received = $this->request->getPost('payment_received');
+
+        // Basic validation.
+        if (empty($cart_items)) {
+            return redirect()->back()->with('error', 'The cart cannot be empty.');
         }
 
         $db = \Config\Database::connect();
-        $db->transStart(); // Start a database transaction.
+        $db->transStart(); // Start a database transaction for data integrity.
 
         try {
-            $cartData = $this->request->getJSON();
-            $cart = $cartData->cart ?? [];
-            $customerInfo = $cartData->customer ?? null;
-            $paymentReceived = $cartData->payment ?? 0;
-
-            if (empty($cart)) {
-                return $this->fail('Cart cannot be empty.');
-            }
-
             $itemModel = new ItemModel();
             $customerModel = new CustomerModel();
             $saleModel = new SaleModel();
@@ -53,100 +49,81 @@ class StaffDashboard extends BaseStaffController
             $totalPrice = 0;
             $customerId = null;
 
-            // 1. Create Customer if provided
-            if ($customerInfo && !empty($customerInfo->name)) {
+            // 1. Create customer if details are provided.
+            if (!empty($customer_name)) {
                 $customerId = $customerModel->insert([
-                    'customer_name'    => $customerInfo->name,
-                    'customer_number'  => $customerInfo->number,
-                    'customer_address' => $customerInfo->address,
+                    'customer_name'    => $customer_name,
+                    'customer_number'  => $customer_number,
+                    'customer_address' => $customer_address,
                 ]);
             }
 
-            // 2. Calculate total price and check stock
-            foreach ($cart as $cartItem) {
-                $item = $itemModel->find($cartItem->id);
-                if (!$item || $item['item_quantity'] < $cartItem->quantity) {
-                    throw new \Exception('Item ' . ($item['item_name'] ?? 'ID:'.$cartItem->id) . ' is out of stock or does not exist.');
+            // 2. Calculate total price and validate stock from the submitted cart data.
+            foreach ($cart_items as $cartItem) {
+                $item = $itemModel->find($cartItem['id']);
+                if (!$item || $item['item_quantity'] < $cartItem['quantity']) {
+                    throw new \Exception('Item ' . ($item['item_name'] ?? 'ID:'.$cartItem['id']) . ' is out of stock or does not exist.');
                 }
-                $totalPrice += $cartItem->price * $cartItem->quantity;
+                $totalPrice += $cartItem['price'] * $cartItem['quantity'];
             }
 
-            // 3. Create Sale record
+            // 3. Create the main sale record.
             $saleId = $saleModel->insert([
                 'customer_id'      => $customerId,
                 'staff_id'         => session()->get('staff_id'),
                 'total_price'      => $totalPrice,
-                'payment_received' => $paymentReceived,
-                'change_due'       => $paymentReceived - $totalPrice,
+                'payment_received' => $payment_received,
+                'change_due'       => $payment_received - $totalPrice,
                 'sale_date'        => date('Y-m-d H:i:s'),
             ]);
 
-            // 4. Create Sale Items and update inventory
-            foreach ($cart as $cartItem) {
+            // 4. Create sale items and update inventory.
+            foreach ($cart_items as $cartItem) {
                 $saleItemModel->insert([
                     'sale_id'    => $saleId,
-                    'item_id'    => $cartItem->id,
-                    'quantity'   => $cartItem->quantity,
-                    'item_price' => $cartItem->price,
-                    'subtotal'   => $cartItem->price * $cartItem->quantity,
+                    'item_id'    => $cartItem['id'],
+                    'quantity'   => $cartItem['quantity'],
+                    'item_price' => $cartItem['price'],
+                    'subtotal'   => $cartItem['price'] * $cartItem['quantity'],
                 ]);
 
-                // Decrease the stock quantity
-                $itemModel->set('item_quantity', 'item_quantity - ' . $cartItem->quantity, false)
-                    ->where('item_id', $cartItem->id)
+                // Decrease the stock quantity.
+                $itemModel->set('item_quantity', 'item_quantity - ' . $cartItem['quantity'], false)
+                    ->where('item_id', $cartItem['id'])
                     ->update();
             }
 
-            $db->transComplete(); // Complete the transaction
+            $db->transComplete(); // Finalize the transaction.
 
             if ($db->transStatus() === false) {
-                return $this->failServerError('Transaction failed. Please try again.');
+                throw new \Exception('Database transaction failed.');
             }
 
-            // Return the final sale ID for receipt generation
-            return $this->respondCreated(['success' => true, 'sale_id' => $saleId]);
+            // On success, redirect to the new receipt page with a success message.
+            return redirect()->to('staff/receipt/' . $saleId)->with('success', 'Sale completed successfully!');
 
         } catch (\Exception $e) {
-            $db->transRollback(); // Rollback on error
-            return $this->respond([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 400);
+            $db->transRollback(); // Rollback any database changes on error.
+
+            // On error, redirect back to the dashboard with the error message.
+            return redirect()->back()->withInput()->with('error', $e->getMessage());
         }
     }
 
     /**
      * Displays the receipt for a specific sale.
-     * This now uses the getSaleDetails() method from the SaleModel to ensure
-     * that customer information is included in the data passed to the view.
-     *
-     * @param int $sale_id The ID of the sale.
      */
     public function receipt($sale_id)
     {
         $saleModel = new \App\Models\SaleModel();
-
-        // Use the getSaleDetails method from the SaleModel.
-        // This method performs a JOIN to fetch customer details along with the sale info.
         $saleDetails = $saleModel->getSaleDetails($sale_id);
 
-        // Check if the sale was found
         if (empty($saleDetails)) {
             return redirect()->to('staff/dashboard')->with('error', 'Sale not found.');
         }
 
-        // The view expects two variables: '$sale' and '$sale_items'.
-        // We need to structure the data accordingly from what getSaleDetails returns.
-        $data = [
-            'sale' => $saleDetails, // This array now contains 'customer_name'
-            'sale_items' => $saleDetails['items'] // The items are in a sub-array
-        ];
+        $data['sale'] = $saleDetails;
 
-        // Optional: Remove the 'items' sub-array from the main 'sale' array to keep it clean,
-        // as we are already passing it separately.
-        unset($data['sale']['items']);
-
-        // Load the receipt view with the correctly structured data
         return view('receipt', $data);
     }
 }

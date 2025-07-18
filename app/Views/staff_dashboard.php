@@ -11,293 +11,316 @@
             background-color: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; z-index: 1000;
         }
         .modal-content {
-            background-color: #2c2c2c; padding: 2rem; border-radius: 0.5rem;
-            width: 90%; max-width: 500px; color: white;
+            background-color: #2A3038; /* Match theme */
+            color: #ffffff;
+            padding: 2rem; border-radius: 0.5rem;
+            width: 90%; max-width: 500px;
         }
         .table-responsive::-webkit-scrollbar { width: 8px; }
-        .table-responsive::-webkit-scrollbar-track { background: #2c2c2c; }
+        .table-responsive::-webkit-scrollbar-track { background: #2A3038; }
         .table-responsive::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
         .table-responsive::-webkit-scrollbar-thumb:hover { background: #777; }
+        .inventory-card { cursor: pointer; transition: transform 0.2s; }
+        .inventory-card:hover { transform: scale(1.03); }
     </style>
 <?= $this->endSection() ?>
 
 
 <?= $this->section('content') ?>
+    <form id="sale-form" action="<?= site_url('staff/dashboard/process_sale') ?>" method="post">
+        <?= csrf_field() ?>
+        <div id="hidden-inputs-container"></div>
+
+        <div class="row">
+            <div class="col-md-7 grid-margin">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">INVENTORY</h4>
+                        <input type="text" id="inventory-search" class="form-control mb-4" placeholder="Search for items...">
+                        <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+                            <div id="inventory-list" class="row">
+                                <?php foreach ($items as $item): ?>
+                                    <div class="col-md-4 mb-3 inventory-item" data-name="<?= strtolower(esc($item['item_name'])) ?>">
+
+                                        <div class="card bg-dark text-white inventory-card" data-id="<?= $item['item_id'] ?>" data-name="<?= esc($item['item_name']) ?>" data-price="<?= esc($item['item_initial_price']) ?>" data-stock="<?= $item['item_quantity'] ?>">
+                                            <div class="card-body text-center">
+                                                <h5 class="card-title"><?= esc($item['item_name']) ?></h5>
+                                                <p class="card-text">Stock: <?= $item['item_quantity'] ?></p>
+
+                                                <p class="card-text font-weight-bold">₱<?= number_format($item['item_initial_price'], 2) ?></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5 grid-margin">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">CART</h4>
+                        <div class="table-responsive" style="max-height: 45vh; overflow-y: auto;">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Qty</th>
+                                    <th>Price</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody id="cart-items">
+                                </tbody>
+                            </table>
+                        </div>
+                        <hr>
+                        <div class="text-right">
+                            <h3>Total: <span id="total-price">₱0.00</span></h3>
+                        </div>
+                        <div class="mt-3">
+                            <button type="button" id="add-customer-btn" class="btn btn-info btn-block">ADD CUSTOMER</button>
+                            <button type="button" id="checkout-btn" class="btn btn-primary btn-block mt-2">CHECKOUT</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
     <div id="customer-modal" class="modal-overlay">
         <div class="modal-content">
-            <h2 class="text-2xl font-bold mb-4">CUSTOMER INFO</h2>
+            <h4 class="card-title mb-4">CUSTOMER INFO</h4>
             <form id="customer-form">
-                <div class="space-y-4">
-                    <input type="text" id="customer-name" name="name" placeholder="Customer name" class="form-control bg-gray-800 text-white border-gray-600 w-full" required>
-                    <input type="tel" id="customer-number" name="number" placeholder="Number (Optional)" class="form-control bg-gray-800 text-white border-gray-600 w-full">
-                    <input type="text" id="customer-address" name="address" placeholder="Address (Optional)" class="form-control bg-gray-800 text-white border-gray-600 w-full">
+                <div class="form-group">
+                    <label for="customer-name">Name</label>
+                    <input type="text" class="form-control" id="customer-name" name="name" required>
                 </div>
-                <div class="text-center mt-6 flex justify-between">
-                    <button type="button" class="btn btn-secondary" id="cancel-customer-btn">Cancel</button>
-                    <button type="submit" class="btn btn-light">Save Customer</button>
+                <div class="form-group">
+                    <label for="customer-number">Contact Number</label>
+                    <input type="text" class="form-control" id="customer-number" name="number">
                 </div>
+                <div class="form-group">
+                    <label for="customer-address">Address</label>
+                    <input type="text" class="form-control" id="customer-address" name="address">
+                </div>
+                <button type="submit" class="btn btn-primary">Save Customer</button>
+                <button type="button" id="close-customer-modal" class="btn btn-light">Cancel</button>
             </form>
         </div>
     </div>
 
     <div id="payment-modal" class="modal-overlay">
         <div class="modal-content">
-            <h2 class="text-2xl font-bold mb-4">PAYMENT</h2>
-            <div id="payment-cart-summary" class="mb-4"></div>
-            <h3 class="text-xl font-bold mb-2">Total Amount: <span id="payment-total-amount"></span></h3>
+            <h4 class="card-title mb-4">PAYMENT</h4>
+            <div class="form-group">
+                <label>Total Amount</label>
+                <input type="text" class="form-control" id="payment-total" readonly>
+            </div>
             <div class="form-group">
                 <label for="payment-received">Payment Received</label>
-                <input type="number" id="payment-received" class="form-control bg-gray-800 text-white border-gray-600 w-full" min="0" step="0.01">
+                <input type="number" class="form-control" id="payment-received" step="0.01" required>
             </div>
-            <h3 class="text-lg font-bold mt-2">Change: <span id="payment-change">₱0.00</span></h3>
-            <div class="text-center mt-6 flex justify-between">
-                <button type="button" class="btn btn-secondary" id="cancel-payment-btn">Cancel</button>
-                <button type="button" class="btn btn-success" id="submit-payment-btn">Submit Payment</button>
+            <div class="form-group">
+                <label>Change</label>
+                <input type="text" class="form-control" id="payment-change" readonly>
             </div>
-        </div>
-    </div>
-
-    <div class="text-white">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2">
-                <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-xl font-semibold">INVENTORY:</h2>
-                    <input type="text" id="search-inventory" class="form-control bg-gray-700 text-white border-gray-600" style="width: 250px;" placeholder="Search items...">
-                </div>
-                <div class="table-container bg-gray-800 rounded-lg p-1">
-                    <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
-                        <table class="table text-white">
-                            <thead>
-                            <tr><th>ID</th><th>ITEM NAME</th><th class="text-center">QTY</th><th class="text-right">PRICE</th><th class="text-center">ACTION</th></tr>
-                            </thead>
-                            <tbody id="inventory-tbody">
-                            <?php if (!empty($items)): ?>
-                                <?php foreach ($items as $item): ?>
-                                    <tr class="inventory-row" data-name="<?= strtolower(esc($item['item_name'])) ?>">
-                                        <td><?= esc($item['item_id']) ?></td>
-                                        <td><?= esc($item['item_name']) ?></td>
-                                        <td class="text-center"><?= esc($item['item_quantity']) ?></td>
-                                        <td class="text-right">₱<?= number_format(esc($item['item_initial_price']), 2) ?></td>
-                                        <td class="text-center">
-                                            <button class="btn btn-sm btn-primary add-to-cart-btn"
-                                                    data-id="<?= esc($item['item_id']) ?>"
-                                                    data-name="<?= esc($item['item_name']) ?>"
-                                                    data-price="<?= esc($item['item_initial_price']) ?>"
-                                                    data-stock="<?= esc($item['item_quantity']) ?>"
-                                                <?= $item['item_quantity'] <= 0 ? 'disabled' : '' ?>>+</button>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                                <tr id="no-results-row" style="display: none;"><td colspan="5" class="text-center">No items match your search.</td></tr>
-                            <?php else: ?>
-                                <tr><td colspan="5" class="text-center">No inventory items found.</td></tr>
-                            <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <h2 class="text-xl font-semibold mb-2">YOUR CART:</h2>
-                <div id="cart-items-container" class="space-y-2 bg-gray-800 rounded-lg p-4" style="min-height: 45vh;">
-                    <p class="text-gray-400 text-center" id="cart-empty-msg">Cart is empty</p>
-                </div>
-                <div class="pt-4 mt-4 border-t border-gray-600">
-                    <h3 class="text-lg font-bold flex justify-between"><span>TOTAL PRICE :</span><span id="total-price">₱0.00</span></h3>
-                </div>
-                <div class="flex justify-between mt-4">
-                    <button class="btn btn-info" id="add-customer-btn">ADD CUSTOMER</button>
-                    <button class="btn btn-success" id="checkout-btn">CHECK OUT</button>
-                </div>
-            </div>
+            <button type="button" id="submit-payment-btn" class="btn btn-success">Confirm & Submit Sale</button>
+            <button type="button" id="cancel-payment-btn" class="btn btn-light">Cancel</button>
         </div>
     </div>
 <?= $this->endSection() ?>
 
+
 <?= $this->section('scripts') ?>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // === ELEMENTS ===
-            const searchInput = document.getElementById('search-inventory');
-            const inventoryTbody = document.getElementById('inventory-tbody');
-            const noResultsRow = document.getElementById('no-results-row');
-            const cartItemsContainer = document.getElementById('cart-items-container');
-            const cartEmptyMsg = document.getElementById('cart-empty-msg');
+        document.addEventListener('DOMContentLoaded', () => {
+            const inventoryList = document.getElementById('inventory-list');
+            const cartItemsEl = document.getElementById('cart-items');
             const totalPriceEl = document.getElementById('total-price');
             const checkoutBtn = document.getElementById('checkout-btn');
             const addCustomerBtn = document.getElementById('add-customer-btn');
 
-            // Modal Elements
+            // Modals and Forms
             const customerModal = document.getElementById('customer-modal');
+            const closeCustomerModalBtn = document.getElementById('close-customer-modal');
             const customerForm = document.getElementById('customer-form');
-            const cancelCustomerBtn = document.getElementById('cancel-customer-btn');
             const paymentModal = document.getElementById('payment-modal');
-            const paymentCartSummary = document.getElementById('payment-cart-summary');
-            const paymentTotalAmount = document.getElementById('payment-total-amount');
-            const paymentReceivedInput = document.getElementById('payment-received');
-            const paymentChangeEl = document.getElementById('payment-change');
             const cancelPaymentBtn = document.getElementById('cancel-payment-btn');
             const submitPaymentBtn = document.getElementById('submit-payment-btn');
+            const paymentTotalEl = document.getElementById('payment-total');
+            const paymentReceivedInput = document.getElementById('payment-received');
+            const paymentChangeEl = document.getElementById('payment-change');
+            const saleForm = document.getElementById('sale-form');
+            const hiddenInputsContainer = document.getElementById('hidden-inputs-container');
+            const searchInput = document.getElementById('inventory-search');
 
-            // === STATE ===
             let cart = [];
             let currentCustomer = null;
 
-            // === SEARCH FUNCTIONALITY ===
-            searchInput.addEventListener('input', function() {
-                const searchTerm = searchInput.value.toLowerCase();
-                const inventoryRows = inventoryTbody.querySelectorAll('tr.inventory-row');
-                let visibleCount = 0;
+            // --- FUNCTIONS ---
 
-                inventoryRows.forEach(row => {
-                    if (row.dataset.name.includes(searchTerm)) {
-                        row.style.display = '';
-                        visibleCount++;
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-                if (noResultsRow) noResultsRow.style.display = visibleCount === 0 ? '' : 'none';
-            });
-
-            // === CART FUNCTIONS ===
-            function addToCart(event) {
-                const button = event.target;
-                const itemId = button.dataset.id;
-                const stock = parseInt(button.dataset.stock);
-
-                const quantity = parseInt(prompt('Enter quantity:', 1));
-                if (isNaN(quantity) || quantity <= 0) return;
-
-                let totalInCart = 0;
-                const itemInCart = cart.find(item => item.id == itemId);
-                if (itemInCart) totalInCart = itemInCart.quantity;
-
-                if (stock < totalInCart + quantity) {
-                    alert('Not enough stock available.');
-                    return;
-                }
-
-                if (itemInCart) {
-                    itemInCart.quantity += quantity;
-                } else {
-                    cart.push({
-                        id: itemId,
-                        name: button.dataset.name,
-                        price: parseFloat(button.dataset.price),
-                        quantity: quantity
-                    });
-                }
-                updateCartDisplay();
-            }
-
-            function removeFromCart(itemId) {
-                cart = cart.filter(item => item.id != itemId);
-                updateCartDisplay();
-            }
-
-            function updateCartDisplay() {
-                cartItemsContainer.innerHTML = '';
-                cartEmptyMsg.style.display = cart.length === 0 ? 'block' : 'none';
-
+            const updateCart = () => {
+                cartItemsEl.innerHTML = '';
                 let total = 0;
-                cart.forEach(cartItem => {
-                    cartItemsContainer.insertAdjacentHTML('beforeend', `
-                <div class="flex items-center justify-between p-2 bg-gray-700 rounded">
-                    <span>${cartItem.name} (x${cartItem.quantity})</span>
-                    <button class="text-red-500 hover:text-red-700 remove-from-cart-btn" data-id="${cartItem.id}">X</button>
-                </div>`);
-                    total += cartItem.price * cartItem.quantity;
+                cart.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.name}</td>
+                        <td>
+                            <input type="number" value="${item.quantity}" min="1" max="${item.stock}" class="form-control cart-quantity-input" data-index="${index}" style="width: 70px;">
+                        </td>
+                        <td>₱${(item.price * item.quantity).toFixed(2)}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm remove-from-cart" data-index="${index}">X</button>
+                        </td>
+                    `;
+                    cartItemsEl.appendChild(row);
+                    total += item.price * item.quantity;
                 });
                 totalPriceEl.textContent = `₱${total.toFixed(2)}`;
-            }
+            };
 
-            // === MODAL AND CHECKOUT FUNCTIONS ===
-            function showPaymentModal() {
+            const addToCart = (itemData) => {
+                const existingItem = cart.find(item => item.id === itemData.id);
+                if (existingItem) {
+                    if (existingItem.quantity < existingItem.stock) {
+                        existingItem.quantity++;
+                    } else {
+                        alert('Maximum stock reached for this item.');
+                    }
+                } else {
+                    if (itemData.stock > 0) {
+                        cart.push({ ...itemData, quantity: 1 });
+                    } else {
+                        alert('This item is out of stock.');
+                    }
+                }
+                updateCart();
+            };
+
+            const showPaymentModal = () => {
                 if (cart.length === 0) {
                     alert('Your cart is empty.');
                     return;
                 }
-                paymentCartSummary.innerHTML = cart.map(item => `<div>${item.name} (x${item.quantity})</div>`).join('');
-                paymentTotalAmount.textContent = totalPriceEl.textContent;
+                paymentTotalEl.value = totalPriceEl.textContent;
                 paymentReceivedInput.value = '';
-                paymentChangeEl.textContent = '₱0.00';
+                paymentChangeEl.value = '';
                 paymentModal.style.display = 'flex';
-            }
+            };
 
-            async function processCheckout() {
-                submitPaymentBtn.disabled = true;
-                submitPaymentBtn.textContent = 'Processing...';
+            const prepareAndSubmitSale = () => {
+                // Clear any old hidden inputs
+                hiddenInputsContainer.innerHTML = '';
 
-                try {
-                    // 1. Create the payload with all the data
-                    const payload = {
-                        cart: cart,
-                        customer: currentCustomer,
-                        payment: parseFloat(paymentReceivedInput.value) || 0,
-                        // 2. Add the CSRF token directly to the payload
-                        '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
-                    };
-
-                    // 3. Make the fetch request (the header is no longer needed for CSRF)
-                    const response = await fetch('<?= site_url('/staff/api/checkout') ?>', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest' // Good practice for CodeIgniter
-                        },
-                        body: JSON.stringify(payload)
+                // Add cart items as hidden inputs
+                cart.forEach((item, index) => {
+                    Object.keys(item).forEach(key => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = `cart_items[${index}][${key}]`;
+                        input.value = item[key];
+                        hiddenInputsContainer.appendChild(input);
                     });
+                });
 
-                    const result = await response.json();
-
-                    if (response.ok && result.success) {
-                        alert(`Checkout successful!`);
-                        window.location.href = `<?= site_url('/staff/receipt/') ?>${result.sale_id}`;
-                    } else {
-                        alert(`Checkout failed: ${result.message || 'An unknown error occurred.'}`);
-                    }
-                } catch (error) {
-                    console.error('Checkout error:', error);
-                    alert('A critical error occurred. Please check the browser console for details.');
-                } finally {
-                    submitPaymentBtn.disabled = false;
-                    submitPaymentBtn.textContent = 'Submit Payment';
+                // Add customer info as hidden inputs
+                if (currentCustomer) {
+                    Object.keys(currentCustomer).forEach(key => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = `customer_${key}`;
+                        input.value = currentCustomer[key];
+                        hiddenInputsContainer.appendChild(input);
+                    });
                 }
-            }
 
-            // === EVENT LISTENERS ===
-            inventoryTbody.addEventListener('click', (e) => {
-                if (e.target.classList.contains('add-to-cart-btn')) addToCart(e);
+                // Add payment received as hidden input
+                const paymentInput = document.createElement('input');
+                paymentInput.type = 'hidden';
+                paymentInput.name = 'payment_received';
+                paymentInput.value = paymentReceivedInput.value || 0;
+                hiddenInputsContainer.appendChild(paymentInput);
+
+                // Submit the form
+                saleForm.submit();
+            };
+
+            // --- EVENT LISTENERS ---
+
+            inventoryList.addEventListener('click', (e) => {
+                const card = e.target.closest('.inventory-card');
+                if (card) {
+                    const itemData = {
+                        id: card.dataset.id,
+                        name: card.dataset.name,
+                        price: parseFloat(card.dataset.price),
+                        stock: parseInt(card.dataset.stock, 10),
+                    };
+                    addToCart(itemData);
+                }
             });
 
-            cartItemsContainer.addEventListener('click', (e) => {
-                if (e.target.classList.contains('remove-from-cart-btn')) removeFromCart(e.target.dataset.id);
+            cartItemsEl.addEventListener('click', (e) => {
+                if (e.target.classList.contains('remove-from-cart')) {
+                    const index = e.target.dataset.index;
+                    cart.splice(index, 1);
+                    updateCart();
+                }
             });
 
-            // Modal Listeners
+            cartItemsEl.addEventListener('change', (e) => {
+                if (e.target.classList.contains('cart-quantity-input')) {
+                    const index = e.target.dataset.index;
+                    const newQuantity = parseInt(e.target.value, 10);
+                    if (newQuantity > 0 && newQuantity <= cart[index].stock) {
+                        cart[index].quantity = newQuantity;
+                    } else {
+                        e.target.value = cart[index].quantity; // Revert to old value
+                        alert(`Quantity must be between 1 and ${cart[index].stock}.`);
+                    }
+                    updateCart();
+                }
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                document.querySelectorAll('.inventory-item').forEach(item => {
+                    const itemName = item.dataset.name;
+                    if (itemName.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
             addCustomerBtn.addEventListener('click', () => customerModal.style.display = 'flex');
-            cancelCustomerBtn.addEventListener('click', () => customerModal.style.display = 'none');
+            closeCustomerModalBtn.addEventListener('click', () => customerModal.style.display = 'none');
             customerModal.addEventListener('click', (e) => { if (e.target === customerModal) customerModal.style.display = 'none'; });
             customerForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 currentCustomer = { name: customerForm.name.value, number: customerForm.number.value, address: customerForm.address.value };
                 addCustomerBtn.textContent = 'CUSTOMER ADDED';
-                addCustomerBtn.classList.replace('btn-info', 'btn-warning');
-                alert(`Customer "${currentCustomer.name}" added.`);
+                addCustomerBtn.classList.replace('btn-info', 'btn-success');
+                alert(`Customer "${currentCustomer.name}" added to sale.`);
                 customerModal.style.display = 'none';
             });
 
             checkoutBtn.addEventListener('click', showPaymentModal);
             cancelPaymentBtn.addEventListener('click', () => paymentModal.style.display = 'none');
             paymentModal.addEventListener('click', (e) => { if (e.target === paymentModal) paymentModal.style.display = 'none'; });
-            submitPaymentBtn.addEventListener('click', processCheckout);
+
+            submitPaymentBtn.addEventListener('click', prepareAndSubmitSale);
+
             paymentReceivedInput.addEventListener('input', () => {
                 const total = parseFloat(totalPriceEl.textContent.replace('₱', ''));
                 const received = parseFloat(paymentReceivedInput.value) || 0;
                 const change = received - total;
-                paymentChangeEl.textContent = `₱${change > 0 ? change.toFixed(2) : '0.00'}`;
+                paymentChangeEl.value = `₱${change >= 0 ? change.toFixed(2) : '0.00'}`;
             });
         });
     </script>
