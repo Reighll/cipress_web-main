@@ -9,9 +9,18 @@ class StaffLogin extends BaseController
 {
     use ResponseTrait;
 
+    /**
+     * Displays the staff login page or redirects if already logged in.
+     *
+     * @return \CodeIgniter\HTTP\RedirectResponse|string
+     */
     public function index()
     {
-        // This controller's only job is to load the view file.
+        // [THE FIX] If staff is already logged in, redirect to their dashboard
+        if (session()->get('is_staff_logged_in')) {
+            return redirect()->to('staff/dashboard');
+        }
+
         return view('staff_login');
     }
 
@@ -62,17 +71,11 @@ class StaffLogin extends BaseController
     }
 
     /**
-     * --- THIS IS THE UPDATED FUNCTION ---
-     * Logs the staff member out by removing their specific session data
-     * and redirects them to the staff login page.
+     * Logs the staff member out.
      */
     public function logout()
     {
-        // Remove only staff-specific session variables.
-        // This is safer than session()->destroy().
         session()->remove(['staff_id', 'staff_username', 'is_staff_logged_in']);
-
-        // Redirect to the staff login page with a success message.
         return redirect()->to('/login/staff')->with('success', 'You have been logged out successfully.');
     }
 }

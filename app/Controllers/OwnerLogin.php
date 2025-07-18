@@ -10,12 +10,17 @@ class OwnerLogin extends BaseController
     use ResponseTrait;
 
     /**
-     * Displays the owner login page.
+     * Displays the owner login page or redirects if already logged in.
      *
-     * @return string
+     * @return \CodeIgniter\HTTP\RedirectResponse|string
      */
-    public function index(): string
+    public function index()
     {
+        // If owner is already logged in, redirect to their dashboard
+        if (session()->get('is_owner_logged_in')) {
+            return redirect()->to('owner/dashboard');
+        }
+
         return view('owner_login');
     }
 
@@ -24,7 +29,6 @@ class OwnerLogin extends BaseController
      */
     public function attemptLogin()
     {
-        // ... (existing attemptLogin code remains the same)
         // 1. Set up validation rules.
         $rules = [
             'username' => 'required',

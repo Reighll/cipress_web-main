@@ -58,6 +58,6 @@ $routes->group('staff', ['filter' => 'staff_auth'], function ($routes) {
     $routes->post('dashboard/process_sale', 'StaffDashboard::process_sale');
     $routes->get('receipt/(:num)', 'StaffDashboard::receipt/$1');
 
-    // Staff-specific logout
+    // Staff logout
     $routes->get('logout', 'StaffLogin::logout');
 });
