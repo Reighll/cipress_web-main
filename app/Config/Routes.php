@@ -45,6 +45,8 @@ $routes->group('owner', ['filter' => 'owner_auth'], function ($routes) {
     $routes->get('staff-management', 'StaffManagement::index');
     $routes->get('staff/delete/(:num)', 'StaffManagement::deleteStaff/$1');
     $routes->get('sales-report', 'SalesReport::index');
+    $routes->get('receipt/(:num)', 'SalesReport::viewReceipt/$1');
+
 
     // Staff approval from dashboard
     $routes->get('staff/approve/(:num)', 'OwnerDashboard::approveStaff/$1');
@@ -56,7 +58,12 @@ $routes->group('owner', ['filter' => 'owner_auth'], function ($routes) {
 // This group requires the user to be logged in as a staff member.
 $routes->group('staff', ['filter' => 'staff_auth'], function ($routes) {
     $routes->get('dashboard', 'StaffDashboard::index');
-    $routes->get('receipt/(:num)', 'SalesReport::viewReceipt/$1');
+
+    // --- FIX ---
+    // The receipt route now correctly points to the 'receipt' method
+    // in the 'StaffDashboard' controller, which is accessible to staff.
+    $routes->get('receipt/(:num)', 'StaffDashboard::receipt/$1');
+
     $routes->get('logout', 'StaffLogin::logout');
 
     // API routes for the staff dashboard (e.g., checkout)

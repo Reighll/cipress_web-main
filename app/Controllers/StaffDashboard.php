@@ -14,13 +14,10 @@ class StaffDashboard extends BaseStaffController
 
     /**
      * Displays the main staff dashboard (the cart view).
-     * This now fetches inventory data directly and passes it to the view.
      */
     public function index()
     {
         $itemModel = new ItemModel();
-        // Fetch all items and pass them to the view.
-        // The view will now be responsible for rendering the initial inventory.
         $data['items'] = $itemModel->findAll();
 
         return view('staff_dashboard', $data);
@@ -28,7 +25,6 @@ class StaffDashboard extends BaseStaffController
 
     /**
      * API endpoint to process the checkout.
-     * This function remains unchanged as it's still needed for handling the cart submission.
      */
     public function processCheckout()
     {
@@ -112,14 +108,45 @@ class StaffDashboard extends BaseStaffController
 
         } catch (\Exception $e) {
             $db->transRollback(); // Rollback on error
-
-            // --- THIS IS THE FIX ---
-            // Ensure a consistent JSON error response is sent.
-            // The status code (e.g., 400 for Bad Request) is important for the front-end to know it's an error.
             return $this->respond([
                 'success' => false,
                 'message' => $e->getMessage()
-            ], 400); // 400 Bad Request is a good generic client error status
+            ], 400);
         }
+    }
+
+    /**
+     * Displays the receipt for a specific sale.
+     * This now uses the getSaleDetails() method from the SaleModel to ensure
+     * that customer information is included in the data passed to the view.
+     *
+     * @param int $sale_id The ID of the sale.
+     */
+    public function receipt($sale_id)
+    {
+        $saleModel = new \App\Models\SaleModel();
+
+        // Use the getSaleDetails method from the SaleModel.
+        // This method performs a JOIN to fetch customer details along with the sale info.
+        $saleDetails = $saleModel->getSaleDetails($sale_id);
+
+        // Check if the sale was found
+        if (empty($saleDetails)) {
+            return redirect()->to('staff/dashboard')->with('error', 'Sale not found.');
+        }
+
+        // The view expects two variables: '$sale' and '$sale_items'.
+        // We need to structure the data accordingly from what getSaleDetails returns.
+        $data = [
+            'sale' => $saleDetails, // This array now contains 'customer_name'
+            'sale_items' => $saleDetails['items'] // The items are in a sub-array
+        ];
+
+        // Optional: Remove the 'items' sub-array from the main 'sale' array to keep it clean,
+        // as we are already passing it separately.
+        unset($data['sale']['items']);
+
+        // Load the receipt view with the correctly structured data
+        return view('receipt', $data);
     }
 }
