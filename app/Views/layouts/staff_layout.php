@@ -8,35 +8,7 @@
     <link rel="stylesheet" href="<?= base_url('assets/vendors/css/vendor.bundle.base.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/style.css') ?>">
     <link rel="shortcut icon" href="<?= base_url('assets/images/favicon.png') ?>" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .table-container {
-            background-color: #434343;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-        }
-        /* Customer Info Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none; /* Hidden by default */
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background-color: #1f2937;
-            padding: 2rem;
-            border-radius: 1rem;
-            width: 90%;
-            max-width: 400px;
-            color: #fff;
-        }
-    </style>
+    <?= $this->renderSection('styles') ?>
 </head>
 <body>
 <div class="container-scroller">
@@ -71,6 +43,19 @@
                         <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="profileDropdown">
                             <h6 class="p-3 mb-0">Profile</h6>
                             <div class="dropdown-divider"></div>
+
+                            <a href="<?= site_url('staff/settings') ?>" class="dropdown-item preview-item">
+                                <div class="preview-thumbnail">
+                                    <div class="preview-icon bg-dark rounded-circle">
+                                        <i class="mdi mdi-settings text-success"></i>
+                                    </div>
+                                </div>
+                                <div class="preview-item-content">
+                                    <p class="preview-subject mb-1">Settings</p>
+                                </div>
+                            </a>
+                            <div class="dropdown-divider"></div>
+
                             <a href="<?= site_url('staff/logout') ?>" class="dropdown-item preview-item">
                                 <div class="preview-thumbnail">
                                     <div class="preview-icon bg-dark rounded-circle">

@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="<?= base_url('assets/css/style.css') ?>">
     <!-- End layout styles -->
     <link rel="shortcut icon" href="<?= base_url('assets/images/favicon.png') ?>" />
+    <?= $this->renderSection('styles') ?>
 </head>
 <body>
 <div class="container-scroller">
@@ -120,7 +121,8 @@
                         <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="profileDropdown">
                             <h6 class="p-3 mb-0">Profile</h6>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item preview-item">
+                            <!-- [THE FIX] Updated the href to point to the new settings page -->
+                            <a href="<?= site_url('owner/settings') ?>" class="dropdown-item preview-item">
                                 <div class="preview-thumbnail">
                                     <div class="preview-icon bg-dark rounded-circle">
                                         <i class="mdi mdi-settings text-success"></i>
@@ -191,5 +193,6 @@
 <!-- Custom js for this page -->
 <script src="<?= base_url('assets/js/dashboard.js') ?>"></script>
 <!-- End custom js for this page -->
+<?= $this->renderSection('scripts') ?>
 </body>
 </html>
