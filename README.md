@@ -100,10 +100,6 @@ The system is designed to run on the following operating systems:
 ## 6. Development Tools
 
 The following tools were used during development:
-* Cursor IDE
 * PHPStorm
-* Visual Studio Code
 * Git
 * Github
-
-
