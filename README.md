@@ -1,68 +1,112 @@
-# CodeIgniter 4 Application Starter
+# POS Inventory System
 
-## What is CodeIgniter?
+## Project Name
+POS Inventory System
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+## Client
+Nj Cipres General Merchandise
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+## 1. Project Description
 
-## Installation & updates
+The Hardware POS and Inventory System is a desktop or web-based application designed to streamline the sales, inventory tracking, and overall business operations of a hardware store. This system aims to automate transactions, efficiently manage product stock levels, and generate essential business reports, providing real-time insights for both cashiers (staff) and store managers (owners).
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+**Key Features:**
+* **Dual Access Levels:** Distinct functionalities for Owner and Staff roles.
+* **Owner Dashboard:** Overview of staff accounts needing approval and a system key generator for new owner accounts.
+* **Inventory Management:** Comprehensive listing, viewing, adding, editing, and updating of stock items (No., Name, Category, Quantity, Price).
+* **Staff Management:** Monitoring staff activity (clock-in/out) and managing staff accounts (edit/delete).
+* **Sales Reporting:** Generation of daily, weekly, monthly, and annual sales reports.
+* **Point of Sale (POS) for Staff:**
+    * **Cart View:** Input customer information, view available stocks, add/remove items to/from cart.
+    * **Payment View:** Review cart items, confirm total price, input payment received, and calculate change.
+    * **Transaction View:** Automated receipt generation with purchased items, total price, payment received, and change.
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+## 2. Installation Instructions
 
-## Setup
+This section outlines the steps to get the POS Inventory System installed and set up on a local machine.
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+1.  **Clone the repository:**
+    ```bash
+    git clone [https://github.com/Reighll/cipress_web-main.git](https://github.com/Reighll/cipress_web-main.git)
+    ```
 
-## Important Change with index.php
+2.  **Navigate to the project directory:**
+    ```bash
+    cd cipress_web-main
+    ```
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+3.  **Install PHP dependencies (if applicable, for CodeIgniter 4):**
+    ```bash
+    composer install
+    ```
+    *(Ensure Composer is installed on your system.)*
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+4.  **Database Setup (MySQL 8.0):**
+    * Create a MySQL database (e.g., `pos_inventory_db`).
+    * Import your database schema and initial data.
+        *(Instructions for database import, e.g., `mysql -u your_user -p pos_inventory_db < database.sql` or using a GUI tool like phpMyAdmin/MySQL Workbench)*
 
-**Please** read the user guide for a better explanation of how CI4 works!
+5.  **Configure Environment Variables:**
+    * Create a `.env` file by copying `.env.example` (if using CodeIgniter 4).
+    * Update database connection details in your `.env` file:
+        ```
+        database.default.hostname = localhost
+        database.default.database = cipress_web
+        database.default.username = root
+        database.default.password = 1234
+        ```
+    * Generate an app key (if applicable for your framework):
+        ```bash
+        php spark key:generate
+        ```
 
-## Repository Management
+## 3. Usage Guide
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+Instructions on how to use the application after it's installed.
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+1.  **Start the local development server (if web-based, using CodeIgniter's spark server):**
+    ```bash
+    php spark serve
+    ```
+    *(This will typically start the server on `http://localhost:8080` or similar.)*
 
-## Server Requirements
+2.  **Open your web browser and navigate to the application URL:**
+    ```
+    http://localhost:8080
+    ```
+    *(Adjust the port if your server starts on a different one.)*
 
-PHP version 8.1 or higher is required, with the following extensions installed:
+3.  **Log in to the system:**
+    * **Default Owner Credentials (if applicable):**
+        * Username: `admin@example.com` (or similar)
+        * Password: `password` (or similar)
+        *(It is highly recommended to change these default credentials immediately after the first login for security reasons.)*
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+## 4. Supported Operating Systems
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
+The system is designed to run on the following operating systems:
+* Windows 10
+* Windows 11
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+## 5. Technology Stack
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+* **Programming Language:** PHP 8.3.21
+* **Framework:** CodeIgniter 4
+* **Frontend Framework/Library:** Bootstrap
+* **Database:** MySQL 8.0
+
+## 6. Development Tools
+
+The following tools were used during development:
+* Cursor IDE
+* PHPStorm
+* Visual Studio Code
+* Git
+* Github
+
+## 7. License Information
+
+This software is developed as a final project for educational purposes at Technological University of the Philippines. It is intended for academic demonstration and evaluation only, and is not licensed for commercial use or redistribution without explicit permission.
+
