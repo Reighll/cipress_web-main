@@ -106,7 +106,4 @@ The following tools were used during development:
 * Git
 * Github
 
-## 7. License Information
-
-This software is developed as a final project for educational purposes at Technological University of the Philippines. It is intended for academic demonstration and evaluation only, and is not licensed for commercial use or redistribution without explicit permission.
 
