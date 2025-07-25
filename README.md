@@ -57,10 +57,7 @@ This section outlines the steps to get the POS Inventory System installed and se
         database.default.username = root
         database.default.password = 1234
         ```
-    * Generate an app key (if applicable for your framework):
-        ```bash
-        php spark key:generate
-        ```
+
 
 ## 3. Usage Guide
 
